@@ -12,7 +12,6 @@ double getTimeDifference(struct timeval* start, struct timeval* end)
 int main()
 { 
   struct timeval totalExecStart, totalExecEnd, startTime, endTime;
-  struct timeval startTimeBenchmarkRun, endTimeBenchmarkRun;
 
   gettimeofday(&totalExecStart, NULL);
 
@@ -21,13 +20,13 @@ int main()
 
   int maxSizeFactor = 1024 * 16;
   
-  int numBytesToMove, numTimesToRepeat;
+  int numBytesToMove, numOfLoop;
   
-  double benchTime;
+  double timeforFiftyLoops;
   
   int repeatFactor;
 
-  gettimeofday(&startTimeBenchmarkRun, NULL);
+  gettimeofday(&startTime, NULL);
   
   for(j = 1; j <= 50; j++)
     {
@@ -37,21 +36,22 @@ int main()
 	}
     }
 
-  gettimeofday(&endTimeBenchmarkRun, NULL);
+  gettimeofday(&endTime, NULL);
   
-  benchTime = getTimeDifference( &startTimeBenchmarkRun, &endTimeBenchmarkRun);
+  timeforFiftyLoops = getTimeDifference( &startTime, &endTime);
 
-  repeatFactor = (int) 1000 / benchTime; //adjust so that each jump will take around 20 seconds
+  repeatFactor = (int) 1000 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
   
   printf("%d\n", repeatFactor);
 
   for(sizeFactor = 1; sizeFactor <= maxSizeFactor; sizeFactor *= 2)
   {
-      numTimesToRepeat = sizeFactor * repeatFactor;
+      numOfLoop = sizeFactor * repeatFactor;
       numBytesToMove = dataSize / sizeFactor;
+      
       gettimeofday(&startTime, NULL);      
 
-    for(repeat = 1; repeat <= numTimesToRepeat; repeat++)
+    for(repeat = 1; repeat <= numOfLoop; repeat++)
       {
        for(i = 0; i < numBytesToMove; i += 32)
        {	  
@@ -60,12 +60,11 @@ int main()
       }
 
       gettimeofday(&endTime, NULL);
-      t1 = startTime.tv_sec + startTime.tv_usec / 1000000.0;
-      t2 = endTime.tv_sec + endTime.tv_usec / 1000000.0;
-      printf(" %d\t\t%lf\n", dataSize/sizeFactor, t2 - t1);
+      
+      printf(" %d\t\t%lf\n", dataSize/sizeFactor, getTimeDifference(&startTime, &endTime));
 
     } 
   gettimeofday(&totalExecEnd, NULL);
   
-  printf("Total exec time: %lf\n", (totalExecEnd.tv_sec + totalExecEnd.tv_usec / 1000000.0) - (totalExecStart.tv_sec + totalExecStart.tv_usec / 1000000.0));
+  printf("Total exec time: %lf\n", getTimeDifference(&totalExecStart, &totalExecEnd));
 }
