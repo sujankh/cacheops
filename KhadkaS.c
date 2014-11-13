@@ -47,11 +47,9 @@ int main()
 
   for(sizeFactor = 1; sizeFactor <= maxSizeFactor; sizeFactor *= 2)
   {
-      gettimeofday(&startTime, NULL);
-      t1 = startTime.tv_sec + startTime.tv_usec / 1000000.0;
-      
       numTimesToRepeat = sizeFactor * repeatFactor;
       numBytesToMove = dataSize / sizeFactor;
+      gettimeofday(&startTime, NULL);      
 
     for(repeat = 1; repeat <= numTimesToRepeat; repeat++)
       {
@@ -60,7 +58,9 @@ int main()
 	  x[i]++;	 
 	}
       }
-    gettimeofday(&endTime, NULL);
+
+      gettimeofday(&endTime, NULL);
+      t1 = startTime.tv_sec + startTime.tv_usec / 1000000.0;
       t2 = endTime.tv_sec + endTime.tv_usec / 1000000.0;
       printf(" %d\t\t%lf\n", dataSize/sizeFactor, t2 - t1);
 
