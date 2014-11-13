@@ -4,24 +4,53 @@
 
 char x[dataSize];
 
+double getTimeDifference(struct timeval* start, struct timeval* end)
+{
+ return  (end->tv_sec + end->tv_usec / 1000000.0) - (start->tv_sec + start->tv_usec / 1000000.0);
+}
+
 int main()
 { 
   struct timeval totalExecStart, totalExecEnd, startTime, endTime;
-  
+  struct timeval startTimeBenchmarkRun, endTimeBenchmarkRun;
+
   gettimeofday(&totalExecStart, NULL);
+
   double t1, t2;
-  int i, sizeFactor, repeat ;
+  int i,j, sizeFactor, repeat ;
 
   int maxSizeFactor = 1024 * 16;
   
   int numBytesToMove, numTimesToRepeat;
+  
+  double benchTime;
+  
+  int repeatFactor;
+
+  gettimeofday(&startTimeBenchmarkRun, NULL);
+  
+  for(j = 1; j <= 5; j++)
+    {
+      for(i = 0; i < dataSize; i += 32)
+	{
+	  x[i]++;
+	}
+    }
+
+  gettimeofday(&endTimeBenchmarkRun, NULL);
+  
+  benchTime = getTimeDifference( &startTimeBenchmarkRun, &endTimeBenchmarkRun);
+
+  repeatFactor = (int) 100 / benchTime; //adjust so that each jump will take around 20 seconds
+  
+  printf("%d\n", repeatFactor);
 
   for(sizeFactor = 1; sizeFactor <= maxSizeFactor; sizeFactor *= 2)
   {
       gettimeofday(&startTime, NULL);
       t1 = startTime.tv_sec + startTime.tv_usec / 1000000.0;
       
-      numTimesToRepeat = sizeFactor * 2500;
+      numTimesToRepeat = sizeFactor * repeatFactor;
       numBytesToMove = dataSize / sizeFactor;
 
     for(repeat = 1; repeat <= numTimesToRepeat; repeat++)
@@ -31,7 +60,7 @@ int main()
 	  x[i]++;	 
 	}
       }
-      gettimeofday(&endTime, NULL);
+    gettimeofday(&endTime, NULL);
       t2 = endTime.tv_sec + endTime.tv_usec / 1000000.0;
       printf(" %d\t\t%lf\n", dataSize/sizeFactor, t2 - t1);
 
