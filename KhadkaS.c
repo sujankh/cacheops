@@ -29,7 +29,7 @@ int main()
 
   gettimeofday(&startTimeBenchmarkRun, NULL);
   
-  for(j = 1; j <= 5; j++)
+  for(j = 1; j <= 50; j++)
     {
       for(i = 0; i < dataSize; i += 32)
 	{
@@ -41,7 +41,7 @@ int main()
   
   benchTime = getTimeDifference( &startTimeBenchmarkRun, &endTimeBenchmarkRun);
 
-  repeatFactor = (int) 100 / benchTime; //adjust so that each jump will take around 20 seconds
+  repeatFactor = (int) 1000 / benchTime; //adjust so that each jump will take around 20 seconds
   
   printf("%d\n", repeatFactor);
 
