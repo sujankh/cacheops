@@ -1,6 +1,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #define dataSize 64 * 1024 * 1024
+#define minSize 4 * 1024
 
 char x[dataSize];
 
@@ -15,16 +16,13 @@ int main()
 
   gettimeofday(&totalExecStart, NULL);
 
-  double t1, t2;
-  int i,j, sizeFactor, repeat ;
-
-  int maxSizeFactor = 1024 * 16;
+  int i,j,  repeat, power2 ;
   
   int numBytesToMove, numOfLoop;
   
   double timeforFiftyLoops;
   
-  int repeatFactor;
+  int loopFactor;
 
   gettimeofday(&startTime, NULL);
   
@@ -40,15 +38,15 @@ int main()
   
   timeforFiftyLoops = getTimeDifference( &startTime, &endTime);
 
-  repeatFactor = (int) 1000 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
+  loopFactor = (int) 1000 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
   
-  printf("%d\n", repeatFactor);
-
-  for(sizeFactor = 1; sizeFactor <= maxSizeFactor; sizeFactor *= 2)
+  printf("%d\n", loopFactor);
+  
+  numBytesToMove = dataSize;
+  while(numBytesToMove >= minSize)
   {
-      numOfLoop = sizeFactor * repeatFactor;
-      numBytesToMove = dataSize / sizeFactor;
-      
+      numOfLoop = (dataSize/ numBytesToMove) * loopFactor;
+       
       gettimeofday(&startTime, NULL);      
 
     for(repeat = 1; repeat <= numOfLoop; repeat++)
@@ -61,8 +59,12 @@ int main()
 
       gettimeofday(&endTime, NULL);
       
-      printf(" %d\t\t%lf\n", dataSize/sizeFactor, getTimeDifference(&startTime, &endTime));
-
+      printf(" %d\t\t%lf\n", numBytesToMove, getTimeDifference(&startTime, &endTime));
+      
+      if(numBytesToMove > 8 * 1024 * 1024 || numBytesToMove <= 1024 * 1024)
+	numBytesToMove /= 2;
+      else
+	numBytesToMove -= 1024 * 1024;
     } 
   gettimeofday(&totalExecEnd, NULL);
   
