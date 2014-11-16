@@ -99,7 +99,8 @@ numBytesToMove = cacheSize[i];
 
  blockSize = 256;
 timeTaken = 0, prevTime = 0;   
-loopFactor = (10000 / ((i + 1) * (i + 1))) / ((i + 1) * (i + 1) / (i + 1)) *  1000 * KB / numBytesToMove;
+loopFactor = (10000 / (i + 1)) / ((i + 1) * (i + 1) / (i + 1)) *  1000.0 * KB / numBytesToMove;
+printf("%d\n", loopFactor);
 
   while(blockSize >= 4)
   {
