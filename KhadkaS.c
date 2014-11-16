@@ -10,24 +10,18 @@ char x[dataSize];
 
 struct timeval startTime, endTime;
 int i, repeat;
-void (*printer)(int, double, int);
 
 double getTimeDifference(struct timeval* start, struct timeval* end)
 {
  return  (end->tv_sec + end->tv_usec / 1000000.0) - (start->tv_sec + start->tv_usec / 1000000.0);
 }
 
-void printCacheSize(int sizeMoved, double time, int bytesJumped)
+void printSizeTime(int size, double time)
 {
-printf("%d\t\t%lf\n", sizeMoved, time);
+printf("%d\t\t%lf", size, time);
 }
 
-void printBlockSize(int sizeMoved, double time, int bytesJumped)
-{
-printf("%d\t\t%lf\n", bytesJumped, time);
-}
-
-void loop(int numOfLoop, int numBytesToMove, int bytesToJump)
+double loop(int numOfLoop, int numBytesToMove, int bytesToJump)
 {
     gettimeofday(&startTime, NULL);      
 
@@ -42,7 +36,8 @@ void loop(int numOfLoop, int numBytesToMove, int bytesToJump)
       gettimeofday(&endTime, NULL);
       
 //printf(" %d\t\t%lf\n", numBytesToMove, getTimeDifference(&startTime, &endTime));
-printer(numBytesToMove, getTimeDifference(&startTime, &endTime), bytesToJump);
+//printer(numBytesToMove, getTimeDifference(&startTime, &endTime), bytesToJump);
+return  getTimeDifference(&startTime, &endTime);
 }
 
 int main()
@@ -51,67 +46,86 @@ int main()
 
   gettimeofday(&totalExecStart, NULL);
 
-  int i, j;
+int i, j, cacheSize[4];
   
 int numBytesToMove, blockSize,  numOfLoop;
   
   double timeforFiftyLoops;
   
   int loopFactor;
-/*
-printf("Cache size");
 
-  gettimeofday(&startTime, NULL);
+printf("Cache size\n");
   
-   for(j = 1; j <= 50; j++)
-    {
-      for(i = 0; i < dataSize; i += 64)
-	{
-	  x[i]++;
-	}
-    }
+timeforFiftyLoops = loop(50, dataSize, 64);
 
-  gettimeofday(&endTime, NULL);
-  
-  timeforFiftyLoops = getTimeDifference( &startTime, &endTime);
-
-  loopFactor = (int) 1000 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
+ loopFactor = (int) 1000 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
   
   printf("%d\n", loopFactor);
   
   numBytesToMove = dataSize;
   
-printer = printCacheSize;
+double timeTaken, prevTime;
+/*
+prevTime = 0, timeTaken = 0;
 
   while(numBytesToMove >= minSize)
   {
       numOfLoop = (dataSize/ numBytesToMove) * loopFactor;
-       
-loop(numOfLoop, numBytesToMove, 64);
+prevTime = timeTaken; 
+      timeTaken = loop(numOfLoop, numBytesToMove, 64);
 
-      if(numBytesToMove > 8 * MB || numBytesToMove <= 1 * MB)
+printSizeTime(numBytesToMove, timeTaken); printf("\t%lf\n", prevTime/timeTaken);
+      
+     if(numBytesToMove > 8 * MB || numBytesToMove <= 1 * MB)
 	numBytesToMove /= 2;
       else
 	numBytesToMove -= MB;
    } 
-
-//loop(1, 64 * MB, 64);
 */
 printf("%s\n", "Block Size");
 
-printer = printBlockSize;
-
   //BLOCK SIZE
-numBytesToMove = 64 * KB; //L3 cache for now
-  blockSize = 256;
-   
+cacheSize[0] = 32 * KB;
+cacheSize[1] = 256 * KB;
+cacheSize[2] = 3 * MB;
+cacheSize[3] = 0;
+
+//numBytesToMove = 64 * KB; //L3 cache for now
+
+for(i = 0; i < 3; i++)
+  {
+printf("L%d Cache\n", i + 1);
+numBytesToMove = cacheSize[i];
+
+ blockSize = 256;
+timeTaken = 0, prevTime = 0;   
+loopFactor = (10000 / ((i + 1) * (i + 1))) / ((i + 1) * (i + 1) / (i + 1)) *  1000 * KB / numBytesToMove;
+
   while(blockSize >= 4)
   {
-numOfLoop = blockSize * 800;
-   loop(numOfLoop, numBytesToMove, blockSize);
+   numOfLoop = blockSize * loopFactor;
+
+   prevTime = timeTaken;
+   timeTaken = loop(numOfLoop, numBytesToMove, blockSize);
+   
+   printSizeTime(blockSize, timeTaken); printf("\t%lf\n", prevTime / timeTaken);
+
    blockSize /= 2;
   }
+}
+/*numBytesToMove = 64 * MB;
+numOfBlocksInCache = 3 * MB / 64;
 
+for(setAssoc = 2; setAssoc <= 64; setAssoc *= 2)
+  {
+   numOfSetsInCache = numOfBlocksInCache / setAssoc;
+
+   for(i = 1; i <= setAssoc + 1; i++)  
+   {
+     
+   }
+  }
+*/
 gettimeofday(&totalExecEnd, NULL);
   
   printf("Total exec time: %lf\n", getTimeDifference(&totalExecStart, &totalExecEnd));
