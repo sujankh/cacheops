@@ -65,7 +65,7 @@ timeforFiftyLoops = loop(50, dataSize, 64);
   numBytesToMove = dataSize;
   
 double timeTaken, prevTime;
-/*
+
 prevTime = 0, timeTaken = 0;
 
   while(numBytesToMove >= minSize)
@@ -74,25 +74,26 @@ prevTime = 0, timeTaken = 0;
 prevTime = timeTaken; 
       timeTaken = loop(numOfLoop, numBytesToMove, 64);
 
-printSizeTime(numBytesToMove, timeTaken); printf("\t%lf\n", prevTime/timeTaken);
+      printSizeTime(numBytesToMove, timeTaken); printf("\t%lf\n", (prevTime - timeTaken) / prevTime * 100);
       
      if(numBytesToMove > 8 * MB || numBytesToMove <= 1 * MB)
 	numBytesToMove /= 2;
       else
 	numBytesToMove -= MB;
    } 
-*/
+
 printf("%s\n", "Block Size");
 
+/*
   //BLOCK SIZE
 cacheSize[0] = 32 * KB;
-cacheSize[1] = 256 * KB;
+cacheSize[1] = 2048 * KB;
 cacheSize[2] = 3 * MB;
 cacheSize[3] = 0;
 
 //numBytesToMove = 64 * KB; //L3 cache for now
 
-for(i = 0; i < 3; i++)
+for(i = 0; i < 2; i++)
   {
 printf("L%d Cache\n", i + 1);
 numBytesToMove = cacheSize[i];
@@ -113,7 +114,7 @@ printf("%d\n", loopFactor);
 
    blockSize /= 2;
   }
-}
+  }*/
 /*numBytesToMove = 64 * MB;
 numOfBlocksInCache = 3 * MB / 64;
 
