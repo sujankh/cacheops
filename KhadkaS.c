@@ -46,7 +46,8 @@ int main()
 
 int i, j, cacheSize[4];
   
-int numBytesToMove, blockSize,  numOfLoop;
+ double numBytesToMove;
+ int blockSize,  numOfLoop;
   
   double timeforFiftyLoops;
   
@@ -72,8 +73,8 @@ prevTime = 0, timeTaken = 0;
   while(numBytesToMove >= minSize)
   {
       numOfLoop = (dataSize/ numBytesToMove) * loopFactor;
-prevTime = timeTaken; 
-      timeTaken = loop(numOfLoop, numBytesToMove, 64);
+      prevTime = timeTaken; 
+      timeTaken = loop(numOfLoop, (int)numBytesToMove, 64);
 
       printSizeTime(numBytesToMove, timeTaken); printf("\t%lf\n", (prevTime - timeTaken) / prevTime * 100);
       
