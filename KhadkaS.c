@@ -35,8 +35,6 @@ double loop(int numOfLoop, int numBytesToMove, int bytesToJump)
 
       gettimeofday(&endTime, NULL);
       
-//printf(" %d\t\t%lf\n", numBytesToMove, getTimeDifference(&startTime, &endTime));
-//printer(numBytesToMove, getTimeDifference(&startTime, &endTime), bytesToJump);
 return  getTimeDifference(&startTime, &endTime);
 }
 
@@ -53,12 +51,13 @@ int numBytesToMove, blockSize,  numOfLoop;
   double timeforFiftyLoops;
   
   int loopFactor;
+    double sizeFactor, k;
 
 printf("Cache size\n");
   
 timeforFiftyLoops = loop(50, dataSize, 64);
 
- loopFactor = (int) 1000 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
+ loopFactor = (int) 750 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
   
   printf("%d\n", loopFactor);
   
@@ -67,6 +66,8 @@ timeforFiftyLoops = loop(50, dataSize, 64);
 double timeTaken, prevTime;
 
 prevTime = 0, timeTaken = 0;
+ sizeFactor = 3.0/4;
+ k = 8.0/9;
 
   while(numBytesToMove >= minSize)
   {
@@ -76,10 +77,16 @@ prevTime = timeTaken;
 
       printSizeTime(numBytesToMove, timeTaken); printf("\t%lf\n", (prevTime - timeTaken) / prevTime * 100);
       
-     if(numBytesToMove > 8 * MB || numBytesToMove <= 1 * MB)
-	numBytesToMove /= 2;
+      if(numBytesToMove > 2 * MB)
+	{
+	  numBytesToMove *= sizeFactor;
+	  sizeFactor *= k;
+	  k = 1 / k;
+	}	
       else
-	numBytesToMove -= MB;
+	{
+	  numBytesToMove /= 2;
+	}
    } 
 
 printf("%s\n", "Block Size");
