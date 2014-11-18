@@ -42,13 +42,15 @@ int main()
 { 
   struct timeval totalExecStart, totalExecEnd;
 
+  double times[20], sizes[20];
+
   gettimeofday(&totalExecStart, NULL);
 
 int i, j, cacheSize[4];
   
  double numBytesToMove;
  int blockSize,  numOfLoop;
-  
+ int recentCacheIndex; 
   double timeforFiftyLoops;
   
   int loopFactor;
@@ -64,19 +66,22 @@ timeforFiftyLoops = loop(50, dataSize, 64);
   
   numBytesToMove = dataSize;
   
-double timeTaken, prevTime;
+  double timeTaken, prevTime, difference;
 
-prevTime = 0, timeTaken = 0;
  sizeFactor = 3.0/4;
  k = 8.0/9;
+
+ i = 0;
 
   while(numBytesToMove >= minSize)
   {
       numOfLoop = (dataSize/ numBytesToMove) * loopFactor;
-      prevTime = timeTaken; 
+     
       timeTaken = loop(numOfLoop, (int)numBytesToMove, 64);
 
-      printSizeTime(numBytesToMove, timeTaken); printf("\t%lf\n", (prevTime - timeTaken) / prevTime * 100);
+      times[i] = timeTaken;
+      sizes[i] = numBytesToMove;
+	i++;
       
       if(numBytesToMove > 2 * MB)
 	{
@@ -90,7 +95,22 @@ prevTime = 0, timeTaken = 0;
 	}
    } 
 
-printf("%s\n", "Block Size");
+  prevTime = times[0];
+  recentCacheIndex = 0;
+
+  for(i = 0; i < 20; i++)
+  {
+     difference = (prevTime - times[i]) / prevTime * 100;
+     printSizeTime(sizes[i], times[i]); printf("\t%lf\n", difference);
+     prevTime = times[i];
+
+     if(difference > 23 && recentCacheIndex != i - 1)
+       {
+       printf("Is it a cache %lf\n", sizes[i]);
+       recentCacheIndex = i;
+       }
+  }
+  printf("%s\n", "Block Size");
 
 /*
   //BLOCK SIZE
