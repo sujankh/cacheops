@@ -60,7 +60,7 @@ printf("Cache size\n");
   
 timeforFiftyLoops = loop(50, dataSize, 64);
 
- loopFactor = (int) 750 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
+ loopFactor = (int) 1000 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
   
   printf("%d\n", loopFactor);
   
