@@ -185,10 +185,10 @@ int main()
   int i, j;
   gettimeofday(&totalExecStart, NULL);
 
-  //calculateCacheSize();
-   cacheSize[0] = 32 * KB; cacheSize[1] = 256 * KB; cacheSize[2] = 3 * MB;
-   blockSize = 64;
-// blockSize =  calculateBlockSize();
+  calculateCacheSize();
+  // cacheSize[0] = 32 * KB; cacheSize[1] = 256 * KB; cacheSize[2] = 3 * MB;
+  //   blockSize = 64;
+ blockSize =  calculateBlockSize();
    
    // printf("Block Size = %d\n", blockSize);
    // for(i = 3; i >= 0; i--)
