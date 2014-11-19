@@ -10,6 +10,7 @@ char x[dataSize];
 
 struct timeval startTime, endTime;
 int i, repeat;
+int cacheSize[4];
 
 double getTimeDifference(struct timeval* start, struct timeval* end)
 {
@@ -38,44 +39,19 @@ double loop(int numOfLoop, int numBytesToMove, int bytesToJump)
 return  getTimeDifference(&startTime, &endTime);
 }
 
-int main()
-{ 
-  struct timeval totalExecStart, totalExecEnd;
-
+void calculateCacheSize()
+{
   double times[20], sizes[20];
+  double numBytesToMove, sizeFactor, k, timeTaken, prevTime, difference,
+    notedPercentDrop, timeforFiftyLoops;
+  int  numOfLoop, threshold, loopFactor, i, j, nextCacheLikely = 1;
 
-  gettimeofday(&totalExecStart, NULL);
-
-int i, j, cacheSize[4];
-  
- double numBytesToMove;
- int blockSize,  numOfLoop;
- double notedPercentDrop; 
-  double timeforFiftyLoops;
-  
-  int threshold;
-  int loopFactor;
-    double sizeFactor, k;
-
-  double timeTaken, prevTime, difference;
-  int nextCacheLikely = 1;
-
-
-printf("Cache size\n");
-  
+printf("Cache size\n");  
 timeforFiftyLoops = loop(50, dataSize, 64);
-
  loopFactor = (int) 1000 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
   
-  printf("%d\n", loopFactor);
-  
-  numBytesToMove = dataSize;
-  
-
- sizeFactor = 3.0/4;
- k = 8.0/9;
-
- i = 0;
+ sizeFactor = 3.0/4; k = 8.0/9; i = 0;
+numBytesToMove = dataSize;
 
   while(numBytesToMove >= minSize)
   {
@@ -99,9 +75,10 @@ timeforFiftyLoops = loop(50, dataSize, 64);
 	}
    } 
 
-  prevTime = times[0];
- 
+  prevTime = times[0]; 
   threshold = 20;
+  cacheSize[0] = cacheSize[1] = cacheSize[2] = cacheSize[3] = 0;
+  j = 0;
   for(i = 0; i < 20; i++)
   {
      difference = (prevTime - times[i]) / prevTime * 100;
@@ -113,6 +90,7 @@ timeforFiftyLoops = loop(50, dataSize, 64);
 	 if(difference > threshold)
 	   {
 	     printf("Is it a cache %lf\n", sizes[i]);
+	     cacheSize[j++] = sizes[i];
 	     notedPercentDrop = difference;
 	     nextCacheLikely = 0;
 	   }
@@ -126,9 +104,15 @@ timeforFiftyLoops = loop(50, dataSize, 64);
 	   }
        }
   }
-  printf("%s\n", "Block Size");
+
+}
 
 /*
+void calculateBlockSize()
+{
+  int i;   
+ printf("%s\n", "Block Size");
+
   //BLOCK SIZE
 cacheSize[0] = 32 * KB;
 cacheSize[1] = 2048 * KB;
@@ -158,7 +142,17 @@ printf("%d\n", loopFactor);
 
    blockSize /= 2;
   }
-  }*/
+  }
+}
+*/
+int main()
+{ 
+  struct timeval totalExecStart, totalExecEnd;
+  gettimeofday(&totalExecStart, NULL);
+  int i, j;
+
+  calculateCacheSize();
+
 /*numBytesToMove = 64 * MB;
 numOfBlocksInCache = 3 * MB / 64;
 
