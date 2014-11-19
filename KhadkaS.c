@@ -39,6 +39,11 @@ double loop(int numOfLoop, int numBytesToMove, int bytesToJump)
 return  getTimeDifference(&startTime, &endTime);
 }
 
+double getPercentageDifference(double prevTime, double currentTime)
+{
+  return (prevTime - currentTime) / prevTime * 100;
+}
+
 void calculateCacheSize()
 {
   double times[20], sizes[20];
@@ -78,7 +83,7 @@ timeforFiftyLoops = loop(50, dataSize, 64);
   j = 0;
   for(i = 0; i < 20; i++)
   {
-     difference = (prevTime - times[i]) / prevTime * 100;
+    difference = getPercentageDifference(prevTime, times[i]);//(prevTime - times[i]) / prevTime * 100;
      printSizeTime(sizes[i], times[i]); printf("\t%lf\n", difference);
      prevTime = times[i];
      
@@ -108,38 +113,19 @@ timeforFiftyLoops = loop(50, dataSize, 64);
 void calculateBlockSize()
 {
   int blockSize, i, j;
-
   printf("%s\n", "Block Size");
   
-  /* for(i = 0; cacheSize[i] != 0; i++)
-  {
-printf("L%d Cache\n", i + 1);
-numBytesToMove = cacheSize[i];
  blockSize = 256;
-timeTaken = 0, prevTime = 0;   
-loopFactor = (10000 / (i + 1)) / ((i + 1) * (i + 1) / (i + 1)) *  1000.0 * KB / numBytesToMove;
-printf("%d\n", loopFactor);
-  while(blockSize >= 4)
-  {
-   numOfLoop = blockSize * loopFactor;
-   prevTime = timeTaken;
-   timeTaken = loop(numOfLoop, numBytesToMove, blockSize);
-   
-   printSizeTime(blockSize, timeTaken); printf("\t%lf\n", prevTime / timeTaken);
-   blockSize /= 2;
-  }
-  }*/
-
- blockSize = 256;
-timeTaken = 0, prevTime = 0;   
- numOfLoop = 4000;
+ timeTaken = 0, prevTime = 0;   
+ numOfLoop = 3000;
 
   while(blockSize >= 4)
     {
       prevTime = timeTaken;
       timeTaken = loop(numOfLoop, dataSize, blockSize);
-   
-      printSizeTime(blockSize, timeTaken); printf("\t%lf\n", prevTime / timeTaken);
+      
+      difference = getPercentageDifference(prevTime, timeTaken);
+      printSizeTime(blockSize, timeTaken); printf("\t%lf\n", difference );
       blockSize /= 2;
       numOfLoop /= 2;
     }
