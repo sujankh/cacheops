@@ -8,7 +8,7 @@
 
 char x[dataSize];
 struct timeval startTime, endTime;
-int  numOfLoop, loopFactor, repeat, cacheSize[4];
+int  numOfLoop, loopFactor, repeat, cacheSize[4], blockSize;
 double numBytesToMove, timeTaken, prevTime, difference;
 
 double getTimeDifference(struct timeval* start, struct timeval* end)
@@ -110,23 +110,34 @@ timeforFiftyLoops = loop(50, dataSize, 64);
 }
 
 
-void calculateBlockSize()
+int calculateBlockSize()
 {
-  int blockSize, i, j;
+  int i, j, currentBlock, sizes[8];
+  double ratio = 0;
   printf("%s\n", "Block Size");
   
- blockSize = 256;
+ currentBlock = 256;
  timeTaken = 0, prevTime = 0;   
- numOfLoop = 3000;
+ numOfLoop = 1000;
+ i  = 0;
 
-  while(blockSize >= 4)
+  while(currentBlock >= 4)
     {
       prevTime = timeTaken;
-      timeTaken = loop(numOfLoop, dataSize, blockSize);
+      timeTaken = loop(numOfLoop, dataSize, currentBlock);
       
-      difference = getPercentageDifference(prevTime, timeTaken);
-      printSizeTime(blockSize, timeTaken); printf("\t%lf\n", difference );
-      blockSize /= 2;
+      if(prevTime != 0)
+	{
+	  ratio = prevTime / timeTaken;
+	  if(ratio > 1.8)
+	    {
+	      blockSize = sizes[i - 1];
+	      return;	       
+	    }
+	}
+      printSizeTime(currentBlock, timeTaken); printf("\t%lf\n", ratio);
+      sizes[i++] = currentBlock;
+      currentBlock /= 2;
       numOfLoop /= 2;
     }
 }
@@ -139,8 +150,9 @@ int main()
 
   //calculateCacheSize();
   cacheSize[0] = 32 * KB; cacheSize[1] = 256 * KB; cacheSize[2] = 3 * MB;
-  calculateBlockSize();
-
+ blockSize =  calculateBlockSize();
+ 
+ printf("Block Size = %d\n", blockSize);
   //  for(i = 3; i >= 0; i--)
   // printf("%d\n", cacheSize[i]);
  
