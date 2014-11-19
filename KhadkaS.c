@@ -142,6 +142,43 @@ int calculateBlockSize()
     }
 }
 
+void calculateSetAssociativity()
+{
+  int n, setAssoc;
+  int numBlocks = cacheSize[0] / blockSize;
+  int numLoop = 10000;
+
+  printf("Num blocks: %d\n", numBlocks);
+
+  numBytesToMove = dataSize;//cacheSize[0];
+
+ double sizeFactor[2] = { 3.0 / 2, 4.0 / 3 };
+
+ prevTime = timeTaken = 0;
+
+for(setAssoc = 2; setAssoc <= 32; setAssoc *= 2)
+  {
+    n = numBlocks / setAssoc; // num of sets
+    
+    prevTime = timeTaken;
+   timeTaken = loop(numLoop, numBytesToMove, blockSize * n);
+   
+
+   printSizeTime(setAssoc, timeTaken); 
+   if(prevTime != 0)
+     {
+   printf("\t%lf\n", getPercentageDifference(prevTime, timeTaken));
+     }
+   else
+     {
+       printf("\n");
+     }
+   numLoop /= 2;
+   loop(1, dataSize, 64);
+  }
+  
+}
+
 int main()
 { 
   struct timeval totalExecStart, totalExecEnd;
@@ -149,26 +186,14 @@ int main()
   gettimeofday(&totalExecStart, NULL);
 
   //calculateCacheSize();
-  cacheSize[0] = 32 * KB; cacheSize[1] = 256 * KB; cacheSize[2] = 3 * MB;
- blockSize =  calculateBlockSize();
- 
- printf("Block Size = %d\n", blockSize);
-  //  for(i = 3; i >= 0; i--)
-  // printf("%d\n", cacheSize[i]);
- 
-/*numBytesToMove = 64 * MB;
-numOfBlocksInCache = 3 * MB / 64;
-
-for(setAssoc = 2; setAssoc <= 64; setAssoc *= 2)
-  {
-   numOfSetsInCache = numOfBlocksInCache / setAssoc;
-
-   for(i = 1; i <= setAssoc + 1; i++)  
-   {
-     
-   }
-  }
-*/
+   cacheSize[0] = 32 * KB; cacheSize[1] = 256 * KB; cacheSize[2] = 3 * MB;
+   blockSize = 64;
+// blockSize =  calculateBlockSize();
+   
+   // printf("Block Size = %d\n", blockSize);
+   // for(i = 3; i >= 0; i--)
+   // printf("%d\n", cacheSize[i]);
+   //calculateSetAssociativity();
 gettimeofday(&totalExecEnd, NULL);
   
   printf("Total exec time: %lf\n", getTimeDifference(&totalExecStart, &totalExecEnd));
