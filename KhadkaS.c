@@ -50,11 +50,16 @@ int i, j, cacheSize[4];
   
  double numBytesToMove;
  int blockSize,  numOfLoop;
- int recentCacheIndex; 
+ double notedPercentDrop; 
   double timeforFiftyLoops;
   
+  int threshold;
   int loopFactor;
     double sizeFactor, k;
+
+  double timeTaken, prevTime, difference;
+  int nextCacheLikely = 1;
+
 
 printf("Cache size\n");
   
@@ -66,7 +71,6 @@ timeforFiftyLoops = loop(50, dataSize, 64);
   
   numBytesToMove = dataSize;
   
-  double timeTaken, prevTime, difference;
 
  sizeFactor = 3.0/4;
  k = 8.0/9;
@@ -96,18 +100,30 @@ timeforFiftyLoops = loop(50, dataSize, 64);
    } 
 
   prevTime = times[0];
-  recentCacheIndex = 0;
-
+ 
+  threshold = 20;
   for(i = 0; i < 20; i++)
   {
      difference = (prevTime - times[i]) / prevTime * 100;
      printSizeTime(sizes[i], times[i]); printf("\t%lf\n", difference);
      prevTime = times[i];
-
-     if(difference > 23 && recentCacheIndex != i - 1)
+     
+     if(nextCacheLikely)
        {
-       printf("Is it a cache %lf\n", sizes[i]);
-       recentCacheIndex = i;
+	 if(difference > threshold)
+	   {
+	     printf("Is it a cache %lf\n", sizes[i]);
+	     notedPercentDrop = difference;
+	     nextCacheLikely = 0;
+	   }
+       }
+     else
+       {
+	 if(notedPercentDrop - difference > 10)
+	   {
+	     nextCacheLikely = 1;
+	     threshold = 10;
+	   }
        }
   }
   printf("%s\n", "Block Size");
