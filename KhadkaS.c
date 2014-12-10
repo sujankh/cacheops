@@ -50,7 +50,6 @@ void calculateCacheSize()
   double  sizeFactor, k, notedPercentDrop, timeforFiftyLoops;
   int   threshold, nextCacheLikely = 1;
   int i, j;
-printf("Cache size\n");  
 timeforFiftyLoops = loop(50, dataSize, 64);
  loopFactor = (int) 1000 / timeforFiftyLoops; //adjust so that each jump will take around 20 seconds
   
@@ -64,7 +63,6 @@ timeforFiftyLoops = loop(50, dataSize, 64);
       timeTaken = loop(numOfLoop, (int)numBytesToMove, 64);
       times[i] = timeTaken;
       sizes[i] = numBytesToMove; i++;
-      
       if(numBytesToMove > 2 * MB)
 	{
 	  numBytesToMove *= sizeFactor;
@@ -84,14 +82,13 @@ timeforFiftyLoops = loop(50, dataSize, 64);
   for(i = 0; i < 20; i++)
   {
     difference = getPercentageDifference(prevTime, times[i]);//(prevTime - times[i]) / prevTime * 100;
-     printSizeTime(sizes[i], times[i]); printf("\t%lf\n", difference);
      prevTime = times[i];
      
      if(nextCacheLikely)
        {
 	 if(difference > threshold)
 	   {
-	     printf("Is it a cache %lf\n", sizes[i]);
+	     //printf("Is it a cache %lf\n", sizes[i]);
 	     cacheSize[j++] = sizes[i];
 	     notedPercentDrop = difference;
 	     nextCacheLikely = 0;
@@ -106,21 +103,15 @@ timeforFiftyLoops = loop(50, dataSize, 64);
 	   }
        }
   }
-
 }
-
 
 int calculateBlockSize()
 {
   int i, j, currentBlock, sizes[8];
-  double ratio = 0;
-  printf("%s\n", "Block Size");
-  
- currentBlock = 256;
+  double ratio = 0;  currentBlock = 256;
  timeTaken = 0, prevTime = 0;   
  numOfLoop = 1000;
  i  = 0;
-
   while(currentBlock >= 4)
     {
       prevTime = timeTaken;
@@ -132,69 +123,66 @@ int calculateBlockSize()
 	  if(ratio > 1.8)
 	    {
 	      blockSize = sizes[i - 1];
-	      return;	       
+	      return blockSize;	       
 	    }
 	}
-      printSizeTime(currentBlock, timeTaken); printf("\t%lf\n", ratio);
       sizes[i++] = currentBlock;
       currentBlock /= 2;
       numOfLoop /= 2;
     }
+    return blockSize;
 }
 
-void calculateSetAssociativity()
+int calculateSetAssociativity(int cacheS)
 {
-  int n, setAssoc;
-  int numBlocks = cacheSize[0] / blockSize;
+    int i, j, k, n, setAssoc;
+  int numBlocks = cacheS / blockSize;
   int numLoop = 10000;
-
-  printf("Num blocks: %d\n", numBlocks);
-
   numBytesToMove = dataSize;//cacheSize[0];
-
  double sizeFactor[2] = { 3.0 / 2, 4.0 / 3 };
-
  prevTime = timeTaken = 0;
-
-for(setAssoc = 2; setAssoc <= 32; setAssoc *= 2)
+ double max = 0.0; int indx = 0; int set;
+for(setAssoc = 1; setAssoc <= 32; setAssoc *= 2)
   {
     n = numBlocks / setAssoc; // num of sets
     
     prevTime = timeTaken;
-   timeTaken = loop(numLoop, numBytesToMove, blockSize * n);
-   
-
-   printSizeTime(setAssoc, timeTaken); 
+    gettimeofday(&startTime, NULL); k = 0;      
+    for (i = 0; i < numLoop; i++){
+        for (j = 0; j < setAssoc; j++){
+            x[k]++; k = (k + cacheS) % dataSize;
+        }
+    }
+     gettimeofday(&endTime, NULL);
+    timeTaken =  getTimeDifference(&startTime, &endTime);    
    if(prevTime != 0)
      {
-   printf("\t%lf\n", getPercentageDifference(prevTime, timeTaken));
+       double perdiff = getPercentageDifference(prevTime, timeTaken);
+       if (perdiff > max){
+        max = perdiff; set = setAssoc;
+       }
+   //printf("\t%lf\n", perdiff);
      }
    else
      {
-       printf("\n");
+       //printf("\n");
      }
    numLoop /= 2;
    loop(1, dataSize, 64);
   }
-  
+  return set;
 }
-
 int main()
-{ 
-  struct timeval totalExecStart, totalExecEnd;
+{   
   int i, j;
-  gettimeofday(&totalExecStart, NULL);
 
   calculateCacheSize();
-  // cacheSize[0] = 32 * KB; cacheSize[1] = 256 * KB; cacheSize[2] = 3 * MB;
-  //   blockSize = 64;
- blockSize =  calculateBlockSize();
-   
-   // printf("Block Size = %d\n", blockSize);
-   // for(i = 3; i >= 0; i--)
-   // printf("%d\n", cacheSize[i]);
-   //calculateSetAssociativity();
-gettimeofday(&totalExecEnd, NULL);
-  
-  printf("Total exec time: %lf\n", getTimeDifference(&totalExecStart, &totalExecEnd));
+  blockSize =  calculateBlockSize();
+  printf("\t Size \t\tBlock Size \t\tAssociativity\n");
+  for(i = 0; cacheSize[i] != 0; i++)
+  {
+  	printf("\t %10d \t %10d \t %10d \n", cacheSize[i], blockSize, calculateSetAssociativity(cacheSize[i]));
+  }
+ 
+  return 0;
 }
